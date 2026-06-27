@@ -1,19 +1,43 @@
 'use client';
 
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import RecoveryDashboard from '@/components/RecoveryDashboard';
 import AgentCardExpanded from '@/components/AgentCardExpanded';
 import ActionPlan from '@/components/ActionPlan';
 import SynthesizingBanner from '@/components/SynthesizingBanner';
 import { dashboardReducer, initialDashboardState } from '@/lib/dashboardReducer';
-import { callAgent, callPlanAgent } from '@/lib/agents';
+import { callAgentStreaming, callPlanAgent } from '@/lib/agents';
 import { downloadRecoveryPack } from '@/lib/export';
+import { buildPreview } from '@/lib/preview';
 import { AGENT_NAMES } from '@/lib/constants';
+
+// resumeAgent is a genuine downstream consumer of linkedinAgent's output —
+// it does not fire until linkedinAgent completes, and receives the new
+// headline as required context, rather than running in blind parallel.
+const INDEPENDENT_AGENTS = AGENT_NAMES.filter((a) => a !== 'resumeAgent');
 
 export default function DashboardPage() {
   const router = useRouter();
   const [state, dispatch] = useReducer(dashboardReducer, undefined, initialDashboardState);
+  const ctxRef = useRef(null);
+
+  const runStreamingAgent = (agentName, ctx, extraOpts = {}) => {
+    dispatch({ type: 'AGENT_STARTED', agentName });
+    return callAgentStreaming(agentName, ctx, {
+      ...extraOpts,
+      onToken: (text) => dispatch({ type: 'AGENT_STREAM_CHUNK', agentName, text }),
+    })
+      .then(({ content, durationMs }) => {
+        const preview = buildPreview(agentName, content);
+        dispatch({ type: 'AGENT_COMPLETE', agentName, content, preview, durationMs });
+        return content;
+      })
+      .catch((err) => {
+        dispatch({ type: 'AGENT_ERROR', agentName, error: err.message });
+        return null;
+      });
+  };
 
   useEffect(() => {
     const stored = sessionStorage.getItem('recoveryContext');
@@ -22,16 +46,20 @@ export default function DashboardPage() {
       return;
     }
     const ctx = JSON.parse(stored);
+    ctxRef.current = ctx;
     dispatch({ type: 'INIT', recoveryContext: ctx });
+    dispatch({ type: 'AGENT_WAITING', agentName: 'resumeAgent', waitingOn: 'linkedinAgent' });
 
-    AGENT_NAMES.forEach((agentName, index) => {
+    INDEPENDENT_AGENTS.forEach((agentName, index) => {
       setTimeout(() => {
-        dispatch({ type: 'AGENT_STARTED', agentName });
-        callAgent(agentName, ctx)
-          .then(({ content, preview, durationMs }) =>
-            dispatch({ type: 'AGENT_COMPLETE', agentName, content, preview, durationMs })
-          )
-          .catch((err) => dispatch({ type: 'AGENT_ERROR', agentName, error: err.message }));
+        const promise = runStreamingAgent(agentName, ctx);
+        if (agentName === 'linkedinAgent') {
+          promise.then((linkedinContent) => {
+            runStreamingAgent('resumeAgent', ctx, {
+              dependencyContext: linkedinContent ? { newHeadline: linkedinContent.generatedHeadline } : undefined,
+            });
+          });
+        }
       }, index * 50);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -48,24 +76,31 @@ export default function DashboardPage() {
 
   const handleRetry = (agentName) => {
     dispatch({ type: 'AGENT_RETRY', agentName });
-    dispatch({ type: 'AGENT_STARTED', agentName });
-    callAgent(agentName, state.recoveryContext)
-      .then(({ content, preview, durationMs }) =>
-        dispatch({ type: 'AGENT_COMPLETE', agentName, content, preview, durationMs })
-      )
-      .catch((err) => dispatch({ type: 'AGENT_ERROR', agentName, error: err.message }));
+    const ctx = state.recoveryContext;
+    if (agentName === 'resumeAgent') {
+      const linkedinContent = state.outputs.linkedinAgent?.content;
+      runStreamingAgent('resumeAgent', ctx, {
+        dependencyContext: linkedinContent ? { newHeadline: linkedinContent.generatedHeadline } : undefined,
+      });
+    } else {
+      runStreamingAgent(agentName, ctx);
+    }
   };
 
   const handleRetryAll = () => {
     dispatch({ type: 'RETRY_ALL' });
-    AGENT_NAMES.forEach((agentName, index) => {
+    dispatch({ type: 'AGENT_WAITING', agentName: 'resumeAgent', waitingOn: 'linkedinAgent' });
+    const ctx = state.recoveryContext;
+    INDEPENDENT_AGENTS.forEach((agentName, index) => {
       setTimeout(() => {
-        dispatch({ type: 'AGENT_STARTED', agentName });
-        callAgent(agentName, state.recoveryContext)
-          .then(({ content, preview, durationMs }) =>
-            dispatch({ type: 'AGENT_COMPLETE', agentName, content, preview, durationMs })
-          )
-          .catch((err) => dispatch({ type: 'AGENT_ERROR', agentName, error: err.message }));
+        const promise = runStreamingAgent(agentName, ctx);
+        if (agentName === 'linkedinAgent') {
+          promise.then((linkedinContent) => {
+            runStreamingAgent('resumeAgent', ctx, {
+              dependencyContext: linkedinContent ? { newHeadline: linkedinContent.generatedHeadline } : undefined,
+            });
+          });
+        }
       }, index * 50);
     });
   };

@@ -9,7 +9,7 @@ export async function POST(request, { params }) {
     return Response.json({ error: 'Unknown agent' }, { status: 400 });
   }
 
-  const { context, refinementInstruction } = await request.json();
+  const { context, refinementInstruction, dependencyContext, stream } = await request.json();
 
   if (!context) {
     return Response.json({ error: 'Missing context' }, { status: 400 });
@@ -20,7 +20,21 @@ export async function POST(request, { params }) {
   }
 
   const systemPrompt = getSystemPrompt(agentName);
-  const userPrompt = buildUserPrompt(agentName, context, refinementInstruction);
+  const userPrompt = buildUserPrompt(agentName, context, refinementInstruction, dependencyContext);
+
+  const asiBody = {
+    model: 'asi1-mini',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    temperature: 0.7,
+    max_tokens: 800,
+  };
+
+  if (stream) {
+    return handleStreaming(asiBody);
+  }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 12000);
@@ -32,15 +46,7 @@ export async function POST(request, { params }) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.ASI_ONE_API_KEY}`,
       },
-      body: JSON.stringify({
-        model: 'asi1-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.7,
-        max_tokens: 800,
-      }),
+      body: JSON.stringify(asiBody),
       signal: controller.signal,
     });
 
@@ -76,4 +82,60 @@ export async function POST(request, { params }) {
     }
     return Response.json({ error: 'Internal error' }, { status: 500 });
   }
+}
+
+async function handleStreaming(asiBody) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+
+  let asiResponse;
+  try {
+    asiResponse = await fetch('https://api.asi1.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.ASI_ONE_API_KEY}`,
+      },
+      body: JSON.stringify({ ...asiBody, stream: true }),
+      signal: controller.signal,
+    });
+  } catch {
+    clearTimeout(timeout);
+    return Response.json({ error: 'Agent unavailable' }, { status: 502 });
+  }
+
+  if (!asiResponse.ok || !asiResponse.body) {
+    clearTimeout(timeout);
+    return Response.json({ error: 'Agent unavailable' }, { status: 502 });
+  }
+
+  // Passthrough the upstream SSE stream as-is; the client accumulates deltas itself.
+  const upstreamReader = asiResponse.body.getReader();
+  const stream = new ReadableStream({
+    async start(streamController) {
+      try {
+        while (true) {
+          const { done, value } = await upstreamReader.read();
+          if (done) break;
+          streamController.enqueue(value);
+        }
+      } catch {
+        // upstream closed early — let the client's [DONE]/EOF handling cope
+      } finally {
+        clearTimeout(timeout);
+        streamController.close();
+      }
+    },
+    cancel() {
+      upstreamReader.cancel().catch(() => {});
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      Connection: 'keep-alive',
+    },
+  });
 }
