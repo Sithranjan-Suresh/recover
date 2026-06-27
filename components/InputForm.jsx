@@ -11,10 +11,14 @@ export default function InputForm() {
   const [jobTitle, setJobTitle] = useState('');
   const [topSkills, setTopSkills] = useState('');
   const [optionalContext, setOptionalContext] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [linkedinNotice, setLinkedinNotice] = useState(null);
 
   const jobTitleRef = useRef(null);
   const topSkillsRef = useRef(null);
   const optionalRef = useRef(null);
+  const linkedinRef = useRef(null);
 
   const canSubmit =
     rawInput.trim().length >= 10 && jobTitle.trim().length > 0 && topSkills.trim().length > 0;
@@ -26,10 +30,40 @@ export default function InputForm() {
     setOptionalContext(DEMO_PERSONA.optionalContext);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!canSubmit) return;
-    const context = extractRecoveryContext(rawInput, jobTitle, topSkills, optionalContext);
+    if (!canSubmit || submitting) return;
+
+    let mergedOptionalContext = optionalContext;
+
+    if (linkedinUrl.trim()) {
+      setSubmitting(true);
+      setLinkedinNotice('Analyzing your LinkedIn profile...');
+      try {
+        const res = await fetch('/api/linkedin-fetch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: linkedinUrl.trim() }),
+        });
+        const data = await res.json();
+        if (!data.blocked && data.text) {
+          mergedOptionalContext = [optionalContext, `LinkedIn profile content:\n${data.text}`]
+            .filter(Boolean)
+            .join('\n\n');
+          setLinkedinNotice('LinkedIn profile analyzed and added to your context.');
+        } else {
+          setLinkedinNotice(
+            "LinkedIn blocks automated access to profiles, so we couldn't pull this one in — your other answers are still used."
+          );
+        }
+      } catch {
+        setLinkedinNotice("Couldn't reach that LinkedIn URL — continuing with your other answers.");
+      }
+      setSubmitting(false);
+      await new Promise((resolve) => setTimeout(resolve, 900));
+    }
+
+    const context = extractRecoveryContext(rawInput, jobTitle, topSkills, mergedOptionalContext);
     sessionStorage.setItem('recoveryContext', JSON.stringify(context));
     router.push('/dashboard');
   };
@@ -108,6 +142,7 @@ export default function InputForm() {
           ref={optionalRef}
           value={optionalContext}
           onChange={(e) => setOptionalContext(e.target.value.slice(0, 1000))}
+          onKeyDown={focusNext(linkedinRef)}
           placeholder="Paste your current LinkedIn headline and/or a few recent resume bullets (optional)"
           maxLength={1000}
           rows={4}
@@ -118,6 +153,32 @@ export default function InputForm() {
           The more you give us, the less generic your outputs will be.
         </p>
       </div>
+
+      <div>
+        <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>
+          Your LinkedIn profile URL <span style={{ color: 'var(--text-muted)' }}>(optional)</span>
+        </label>
+        <input
+          ref={linkedinRef}
+          type="url"
+          value={linkedinUrl}
+          onChange={(e) => setLinkedinUrl(e.target.value)}
+          onKeyDown={focusNext(null)}
+          placeholder="https://www.linkedin.com/in/your-name"
+          className="w-full rounded-md px-3 py-2 text-sm"
+          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', color: 'var(--text-primary)' }}
+        />
+        <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
+          We&apos;ll try to pull in publicly visible profile text. LinkedIn blocks most automated
+          access, so this is best-effort — your other answers always work regardless.
+        </p>
+      </div>
+
+      {linkedinNotice && (
+        <p className="text-xs" style={{ color: 'var(--accent)' }}>
+          {linkedinNotice}
+        </p>
+      )}
 
       <button
         type="button"
@@ -130,15 +191,15 @@ export default function InputForm() {
 
       <button
         type="submit"
-        disabled={!canSubmit}
+        disabled={!canSubmit || submitting}
         className="text-sm font-semibold px-5 py-3 rounded-md font-display"
         style={{
-          background: canSubmit ? 'var(--accent)' : 'var(--bg-elevated)',
-          color: canSubmit ? '#04111A' : 'var(--text-muted)',
-          cursor: canSubmit ? 'pointer' : 'not-allowed',
+          background: canSubmit && !submitting ? 'var(--accent)' : 'var(--bg-elevated)',
+          color: canSubmit && !submitting ? '#04111A' : 'var(--text-muted)',
+          cursor: canSubmit && !submitting ? 'pointer' : 'not-allowed',
         }}
       >
-        Start Recovery
+        {submitting ? 'Analyzing...' : 'Start Recovery'}
       </button>
     </form>
   );
