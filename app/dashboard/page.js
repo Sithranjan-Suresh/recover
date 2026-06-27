@@ -3,6 +3,7 @@
 import { useEffect, useReducer } from 'react';
 import { useRouter } from 'next/navigation';
 import RecoveryDashboard from '@/components/RecoveryDashboard';
+import AgentCardExpanded from '@/components/AgentCardExpanded';
 import { dashboardReducer, initialDashboardState } from '@/lib/dashboardReducer';
 import { callAgent, callPlanAgent } from '@/lib/agents';
 import { AGENT_NAMES } from '@/lib/constants';
@@ -124,22 +125,12 @@ export default function DashboardPage() {
       )}
 
       {state.expandedAgent && (
-        <div
-          onClick={handleClose}
-          className="fixed inset-0 flex items-center justify-center p-6"
-          style={{ background: 'rgba(0,0,0,0.7)', zIndex: 100 }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="max-w-[680px] w-full rounded-2xl p-6"
-            style={{ background: 'var(--bg-surface)' }}
-          >
-            <p style={{ color: 'var(--text-primary)' }}>Expanded: {state.expandedAgent}</p>
-            <button onClick={handleClose} className="text-sm mt-4" style={{ color: 'var(--accent)' }}>
-              Close
-            </button>
-          </div>
-        </div>
+        <AgentCardExpanded
+          agentName={state.expandedAgent}
+          output={state.outputs[state.expandedAgent]}
+          recoveryContext={state.recoveryContext}
+          onClose={handleClose}
+        />
       )}
     </main>
   );
