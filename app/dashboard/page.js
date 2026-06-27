@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import RecoveryDashboard from '@/components/RecoveryDashboard';
 import AgentCardExpanded from '@/components/AgentCardExpanded';
 import ActionPlan from '@/components/ActionPlan';
+import SynthesizingBanner from '@/components/SynthesizingBanner';
 import { dashboardReducer, initialDashboardState } from '@/lib/dashboardReducer';
 import { callAgent, callPlanAgent } from '@/lib/agents';
 import { downloadRecoveryPack } from '@/lib/export';
@@ -111,6 +112,8 @@ export default function DashboardPage() {
       )}
 
       <RecoveryDashboard outputs={state.outputs} onExpand={handleExpand} onRetry={handleRetry} />
+
+      {state.planStatus === 'generating' && <SynthesizingBanner />}
 
       {state.allAgentsTerminal && !allErrored && state.planStatus === 'complete' && (
         <>
