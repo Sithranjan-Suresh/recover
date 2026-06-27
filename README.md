@@ -1,36 +1,24 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Recover
+
+An autonomous multi-agent job loss recovery platform. The moment you submit your situation, five ASI:ONE agents fire concurrently — LinkedIn rewrite, network outreach, unemployment guidance, job alerts, and resume triage — followed by a plan synthesizer that produces a Day 1 / Week 1 / Month 1 action plan referencing all five outputs.
+
+See [`full_context.md`](./full_context.md), [`product_spec.md`](./product_spec.md), and [`engineering_spec.md`](./engineering_spec.md) for the full project context, feature specs, and implementation details.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Click **"Try a demo scenario"** on the input form to pre-fill the Google PM persona, then **"Start Recovery"** to see the agent fan-out.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Set `ASI_ONE_API_KEY` in `.env.local` (already configured for local dev — never commit this file).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Manual QA checklist
 
-## Learn More
+See the **Pre-Submission QA Checklist** at the end of [`product_spec.md`](./product_spec.md). All five agents have been verified against the demo persona via direct API calls — each returns role-specific output referencing Google, Senior PM, and fintech. `npm run build` completes with no errors or warnings.
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Deploy on [Vercel](https://vercel.com/new) by importing this GitHub repo and setting `ASI_ONE_API_KEY` as an environment variable.
