@@ -7,6 +7,7 @@ import AgentCardExpanded from '@/components/AgentCardExpanded';
 import ActionPlan from '@/components/ActionPlan';
 import { dashboardReducer, initialDashboardState } from '@/lib/dashboardReducer';
 import { callAgent, callPlanAgent } from '@/lib/agents';
+import { downloadRecoveryPack } from '@/lib/export';
 import { AGENT_NAMES } from '@/lib/constants';
 
 export default function DashboardPage() {
@@ -112,7 +113,23 @@ export default function DashboardPage() {
       <RecoveryDashboard outputs={state.outputs} onExpand={handleExpand} onRetry={handleRetry} />
 
       {state.allAgentsTerminal && !allErrored && state.planStatus === 'complete' && (
-        <ActionPlan plan={state.plan} />
+        <>
+          <ActionPlan plan={state.plan} />
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={() => downloadRecoveryPack(state.recoveryContext, state.outputs, state.plan)}
+              disabled={!state.allAgentsTerminal}
+              className="text-sm font-semibold px-5 py-3 rounded-md"
+              style={{
+                background: 'var(--accent)',
+                color: '#04111A',
+                cursor: 'pointer',
+              }}
+            >
+              Download Recovery Pack
+            </button>
+          </div>
+        </>
       )}
 
       {state.expandedAgent && (
