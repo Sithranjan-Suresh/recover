@@ -31,20 +31,42 @@ export default function Home() {
     <main className="flex flex-1 flex-col items-center px-6 overflow-hidden">
       <div
         style={{
-          height: started ? '56px' : '26vh',
+          height: started ? '56px' : '18vh',
           transition: `height ${transitionDuration} ease-in-out`,
           flexShrink: 0,
         }}
       />
 
-      <div className="w-full max-w-xl mx-auto text-center" style={{ flexShrink: 0 }}>
-        <p className="font-mono text-[11px] tracking-widest mb-3" style={{ color: 'var(--ink-faint)' }}>
+      <div className="w-full max-w-2xl mx-auto text-center" style={{ flexShrink: 0 }}>
+        <p
+          className="font-mono tracking-widest mb-4"
+          style={{
+            color: 'var(--ink-faint)',
+            fontSize: started ? '11px' : '13px',
+            transition: `font-size ${transitionDuration} ease-in-out`,
+          }}
+        >
           RECOVER · DEPARTURES
         </p>
-        <h1 className="font-display text-4xl sm:text-5xl font-extrabold mb-3" style={{ color: 'var(--ink)' }}>
+        <h1
+          className="font-display font-extrabold mb-4"
+          style={{
+            color: 'var(--ink)',
+            fontSize: started ? 'clamp(1.75rem, 4vw, 3rem)' : 'clamp(3.5rem, 10vw, 7rem)',
+            lineHeight: 1,
+            transition: `font-size ${transitionDuration} ease-in-out`,
+          }}
+        >
           Recover
         </h1>
-        <p style={{ color: 'var(--ink-muted)', fontFamily: 'var(--font-source-serif)' }}>
+        <p
+          style={{
+            color: 'var(--ink-muted)',
+            fontFamily: 'var(--font-source-serif)',
+            fontSize: started ? '1rem' : '1.375rem',
+            transition: `font-size ${transitionDuration} ease-in-out`,
+          }}
+        >
           Five agents. One sentence. Your recovery starts now.
         </p>
 
