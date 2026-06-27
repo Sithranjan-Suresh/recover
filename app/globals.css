@@ -1,28 +1,46 @@
 @import "tailwindcss";
 
 :root {
-  --bg-base:       #0A0D1A;
-  --bg-surface:    #111425;
-  --bg-elevated:   #1A1F35;
-  --bg-border:     #232840;
+  /* Departure-board palette — warm graphite, not blue-black tech */
+  --board:          #1B1A17;
+  --row:            #242220;
+  --row-alt:        #2A2724;
+  --hairline:       #3A372F;
 
-  --accent:        #00D4FF;
-  --accent-dim:    rgba(0, 212, 255, 0.10);
-  --accent-border: rgba(0, 212, 255, 0.30);
+  --amber:          #F2A93B; /* in progress / primary signal */
+  --amber-dim:      rgba(242, 169, 59, 0.12);
+  --amber-border:   rgba(242, 169, 59, 0.35);
 
-  --success:       #00E5A0;
-  --success-dim:   rgba(0, 229, 160, 0.10);
-  --success-border:rgba(0, 229, 160, 0.30);
+  --sage:           #8FB89A; /* ready / complete */
+  --sage-dim:       rgba(143, 184, 154, 0.12);
+  --sage-border:    rgba(143, 184, 154, 0.35);
 
-  --warning:       #F5A623;
-  --warning-dim:   rgba(245, 166, 35, 0.10);
+  --terracotta:       #D9694F; /* delayed / error */
+  --terracotta-dim:   rgba(217, 105, 79, 0.12);
+  --terracotta-border:rgba(217, 105, 79, 0.4);
 
-  --danger:        #FF3B5C;
-  --danger-dim:    rgba(255, 59, 92, 0.10);
+  --ink:            #ECE6D6;
+  --ink-muted:      #8C8678;
+  --ink-faint:      #4A463C;
 
-  --text-primary:  #EEF2FF;
-  --text-muted:    #5A6480;
-  --text-faint:    #2A3050;
+  /* Legacy aliases (kept during migration; same surface family) */
+  --bg-base: var(--board);
+  --bg-surface: var(--row);
+  --bg-elevated: var(--row-alt);
+  --bg-border: var(--hairline);
+  --accent: var(--amber);
+  --accent-dim: var(--amber-dim);
+  --accent-border: var(--amber-border);
+  --success: var(--sage);
+  --success-dim: var(--sage-dim);
+  --success-border: var(--sage-border);
+  --warning: var(--amber);
+  --warning-dim: var(--amber-dim);
+  --danger: var(--terracotta);
+  --danger-dim: var(--terracotta-dim);
+  --text-primary: var(--ink);
+  --text-muted: var(--ink-muted);
+  --text-faint: var(--ink-faint);
 }
 
 * {
@@ -30,22 +48,56 @@
 }
 
 html, body {
-  background: var(--bg-base);
-  color: var(--text-primary);
-  font-family: var(--font-inter), Inter, sans-serif;
+  background: var(--board);
+  color: var(--ink);
+  font-family: var(--font-source-serif), Georgia, serif;
 }
 
 h1, h2, h3, h4, .font-display {
-  font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  font-family: var(--font-big-shoulders), "Big Shoulders Display", sans-serif;
+  letter-spacing: 0.01em;
 }
 
-@keyframes cardEnter {
-  from { opacity: 0; transform: translateY(8px); }
+.font-mono {
+  font-family: var(--font-plex-mono), "IBM Plex Mono", monospace;
+}
+
+/* Subtle board grain — reinforces "physical object" over "glass panel" */
+body {
+  background-image:
+    radial-gradient(ellipse at top, rgba(242, 169, 59, 0.04), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+}
+
+/* Split-flap status flip */
+@keyframes flapFlip {
+  0%   { opacity: 1; transform: rotateX(0deg); }
+  45%  { opacity: 0.2; transform: rotateX(85deg); }
+  55%  { opacity: 0.2; transform: rotateX(-85deg); }
+  100% { opacity: 1; transform: rotateX(0deg); }
+}
+
+.flap {
+  display: inline-block;
+  transform-origin: 50% 50%;
+}
+
+.flap-flip {
+  animation: flapFlip 420ms cubic-bezier(0.45, 0, 0.55, 1) both;
+}
+
+@keyframes rowEnter {
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+.board-row {
+  animation: rowEnter 220ms ease-out both;
+}
+
+/* Legacy alias */
 .agent-card {
-  animation: cardEnter 200ms ease-out both;
+  animation: rowEnter 220ms ease-out both;
 }
 
 @keyframes checkPop {
@@ -57,19 +109,23 @@ h1, h2, h3, h4, .font-display {
   animation: checkPop 150ms ease-out;
 }
 
-.card-complete {
-  border-left: 3px solid var(--success);
-  border-top: 1px solid var(--bg-border);
-  border-right: 1px solid var(--bg-border);
-  border-bottom: 1px solid var(--bg-border);
+.row-ready {
+  border-left: 3px solid var(--sage);
+  border-top: 1px solid var(--hairline);
+  border-right: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
 }
 
-.card-error {
-  border-left: 3px solid var(--danger);
-  border-top: 1px solid var(--bg-border);
-  border-right: 1px solid var(--bg-border);
-  border-bottom: 1px solid var(--bg-border);
+.row-delayed {
+  border-left: 3px solid var(--terracotta);
+  border-top: 1px solid var(--hairline);
+  border-right: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
 }
+
+/* Legacy aliases */
+.card-complete { border-left: 3px solid var(--sage); border-top: 1px solid var(--hairline); border-right: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); }
+.card-error { border-left: 3px solid var(--terracotta); border-top: 1px solid var(--hairline); border-right: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
@@ -89,7 +145,7 @@ h1, h2, h3, h4, .font-display {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .agent-card, .check-icon, .spinner, .fade-in {
+  .agent-card, .board-row, .check-icon, .spinner, .fade-in, .flap-flip {
     animation: none !important;
   }
 }

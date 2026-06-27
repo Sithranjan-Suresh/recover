@@ -1,26 +1,36 @@
-import { Space_Grotesk, Inter } from "next/font/google";
+import { Big_Shoulders, Source_Serif_4, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  weight: ["500", "700"],
+const bigShoulders = Big_Shoulders({
+  variable: "--font-big-shoulders",
+  weight: ["600", "700", "800"],
   subsets: ["latin"],
 });
 
-const inter = Inter({
-  variable: "--font-inter",
+const sourceSerif = Source_Serif_4({
+  variable: "--font-source-serif",
+  weight: ["400", "600"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+});
+
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-plex-mono",
   weight: ["400", "500"],
   subsets: ["latin"],
 });
 
 export const metadata = {
-  title: "Recover — Your job recovery starts now",
+  title: "Recover — Your recovery starts now",
   description: "Five autonomous agents execute your entire job loss recovery plan in under 60 seconds.",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${bigShoulders.variable} ${sourceSerif.variable} ${plexMono.variable} h-full antialiased`}
+    >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
