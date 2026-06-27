@@ -4,6 +4,7 @@ import { useEffect, useReducer } from 'react';
 import { useRouter } from 'next/navigation';
 import RecoveryDashboard from '@/components/RecoveryDashboard';
 import AgentCardExpanded from '@/components/AgentCardExpanded';
+import ActionPlan from '@/components/ActionPlan';
 import { dashboardReducer, initialDashboardState } from '@/lib/dashboardReducer';
 import { callAgent, callPlanAgent } from '@/lib/agents';
 import { AGENT_NAMES } from '@/lib/constants';
@@ -111,17 +112,7 @@ export default function DashboardPage() {
       <RecoveryDashboard outputs={state.outputs} onExpand={handleExpand} onRetry={handleRetry} />
 
       {state.allAgentsTerminal && !allErrored && state.planStatus === 'complete' && (
-        <div className="fade-in mt-10 p-6 rounded-xl" style={{ background: 'var(--bg-surface)', border: '1px solid var(--bg-border)' }}>
-          <h2 className="font-display text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            Your Recovery Plan
-          </h2>
-          <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
-            Synthesized from all 5 agents
-          </p>
-          <pre className="text-xs whitespace-pre-wrap" style={{ color: 'var(--text-primary)' }}>
-            {JSON.stringify(state.plan, null, 2)}
-          </pre>
-        </div>
+        <ActionPlan plan={state.plan} />
       )}
 
       {state.expandedAgent && (
