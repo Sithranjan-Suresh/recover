@@ -5,32 +5,12 @@ import AgentIcon from './AgentIcon';
 import Spinner from './Spinner';
 import { AGENT_LABELS } from '@/lib/constants';
 
-function ClockIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--text-muted)' }}>
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M12 7v5l3.5 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg className="check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--success)' }}>
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M8 12.5l2.5 2.5L16 9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function WarningIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: 'var(--danger)' }}>
-      <path d="M12 4 2.5 20h19L12 4Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
-      <path d="M12 10v4M12 17h.01" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
+const STATUS_FLAP = {
+  queued: { label: 'QUEUED', color: 'var(--ink-muted)', bg: 'transparent', border: 'var(--hairline)' },
+  running: { label: 'IN PROGRESS', color: 'var(--amber)', bg: 'var(--amber-dim)', border: 'var(--amber-border)' },
+  complete: { label: 'READY', color: 'var(--sage)', bg: 'var(--sage-dim)', border: 'var(--sage-border)' },
+  error: { label: 'DELAYED', color: 'var(--terracotta)', bg: 'var(--terracotta-dim)', border: 'var(--terracotta-border)' },
+};
 
 export default function AgentCard({ agentName, output, index = 0, onExpand, onRetry }) {
   const [elapsed, setElapsed] = useState(0);
@@ -45,75 +25,66 @@ export default function AgentCard({ agentName, output, index = 0, onExpand, onRe
     return () => clearInterval(interval);
   }, [output.status]);
 
-  const baseStyle = {
-    background: 'var(--bg-surface)',
-    borderRadius: 12,
-    padding: 16,
-    animationDelay: `${index * 50}ms`,
-  };
-
-  const borderStyle =
-    output.status === 'complete'
-      ? { borderLeft: '3px solid var(--success)', borderTop: '1px solid var(--bg-border)', borderRight: '1px solid var(--bg-border)', borderBottom: '1px solid var(--bg-border)' }
-      : output.status === 'error'
-      ? { borderLeft: '3px solid var(--danger)', borderTop: '1px solid var(--bg-border)', borderRight: '1px solid var(--bg-border)', borderBottom: '1px solid var(--bg-border)' }
-      : output.status === 'running'
-      ? { border: '1px solid var(--accent-border)' }
-      : { border: '1px solid var(--bg-border)' };
+  const flap = STATUS_FLAP[output.status] || STATUS_FLAP.queued;
+  const code = `R-0${index + 1}`;
 
   return (
-    <div className="agent-card" style={{ ...baseStyle, ...borderStyle }}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-          <AgentIcon agentName={agentName} size={18} />
-          <span className="font-display text-sm font-medium">{AGENT_LABELS[agentName]}</span>
-        </div>
-        {output.status === 'queued' && <ClockIcon />}
-        {output.status === 'running' && <Spinner size={16} />}
-        {output.status === 'complete' && <CheckIcon />}
-        {output.status === 'error' && <WarningIcon />}
-      </div>
+    <div
+      className="board-row flex items-center gap-4 px-4 py-3.5"
+      style={{
+        background: 'var(--row)',
+        borderBottom: '1px solid var(--hairline)',
+        animationDelay: `${index * 50}ms`,
+      }}
+    >
+      <span className="font-mono text-xs flex-shrink-0 w-12" style={{ color: 'var(--ink-faint)' }}>
+        {code}
+      </span>
 
-      {output.status === 'queued' && (
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          Starting...
-        </p>
-      )}
+      <span className="flex-shrink-0" style={{ color: 'var(--ink-muted)' }}>
+        <AgentIcon agentName={agentName} size={18} />
+      </span>
 
-      {output.status === 'running' && (
-        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-          Working... {elapsed > 0 ? `${elapsed}s` : ''}
-        </p>
-      )}
+      <span
+        className="font-display text-base font-semibold flex-shrink-0 w-[150px] truncate"
+        style={{ color: 'var(--ink)' }}
+      >
+        {AGENT_LABELS[agentName]}
+      </span>
+
+      <span
+        key={output.status}
+        className="flap flap-flip font-mono text-[11px] font-medium tracking-wide px-2.5 py-1 rounded flex-shrink-0 w-[112px] text-center"
+        style={{ color: flap.color, background: flap.bg, border: `1px solid ${flap.border}` }}
+      >
+        {output.status === 'running' ? <Spinner size={11} /> : flap.label}
+      </span>
+
+      <span className="flex-1 min-w-0 text-sm truncate italic" style={{ color: 'var(--ink-muted)', fontFamily: 'var(--font-source-serif)' }}>
+        {output.status === 'queued' && 'Waiting in the queue...'}
+        {output.status === 'running' && `Working${elapsed > 0 ? ` · ${elapsed}s` : ''}`}
+        {output.status === 'complete' && output.preview}
+        {output.status === 'error' && (output.error || 'Something went wrong.')}
+      </span>
 
       {output.status === 'complete' && (
-        <>
-          <p className="text-sm mb-3 line-clamp-2" style={{ color: 'var(--text-primary)' }}>
-            {output.preview}
-          </p>
-          <button
-            onClick={() => onExpand(agentName)}
-            className="text-sm font-medium"
-            style={{ color: 'var(--accent)' }}
-          >
-            Expand →
-          </button>
-        </>
+        <button
+          onClick={() => onExpand(agentName)}
+          className="font-mono text-xs font-medium flex-shrink-0 whitespace-nowrap"
+          style={{ color: 'var(--amber)' }}
+        >
+          OPEN →
+        </button>
       )}
 
       {output.status === 'error' && (
-        <>
-          <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>
-            {output.error || 'Something went wrong.'}
-          </p>
-          <button
-            onClick={() => onRetry(agentName)}
-            className="text-sm font-medium px-3 py-1.5 rounded-md"
-            style={{ color: 'var(--danger)', background: 'var(--danger-dim)' }}
-          >
-            Retry
-          </button>
-        </>
+        <button
+          onClick={() => onRetry(agentName)}
+          className="font-mono text-xs font-medium px-2.5 py-1 rounded flex-shrink-0"
+          style={{ color: 'var(--terracotta)', background: 'var(--terracotta-dim)', border: '1px solid var(--terracotta-border)' }}
+        >
+          RETRY
+        </button>
       )}
     </div>
   );
