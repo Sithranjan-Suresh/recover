@@ -24,10 +24,13 @@ export default function Home() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-16 fade-in">
       <div className="w-full max-w-xl mx-auto mb-10 text-center">
-        <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>
+        <p className="font-mono text-[11px] tracking-widest mb-3" style={{ color: 'var(--ink-faint)' }}>
+          RECOVER · DEPARTURES
+        </p>
+        <h1 className="font-display text-4xl sm:text-5xl font-extrabold mb-3" style={{ color: 'var(--ink)' }}>
           Recover
         </h1>
-        <p style={{ color: 'var(--text-muted)' }}>
+        <p style={{ color: 'var(--ink-muted)', fontFamily: 'var(--font-source-serif)' }}>
           Five agents. One sentence. Your recovery starts now.
         </p>
       </div>

@@ -5,6 +5,25 @@ import { useRouter } from 'next/navigation';
 import { DEMO_PERSONA } from '@/lib/constants';
 import { extractRecoveryContext } from '@/lib/context';
 
+const fieldStyle = {
+  background: 'var(--row)',
+  border: '1px solid var(--hairline)',
+  color: 'var(--ink)',
+};
+
+function FieldLabel({ code, children }) {
+  return (
+    <label className="flex items-baseline gap-2 mb-1.5">
+      <span className="font-mono text-[10px] tracking-wide" style={{ color: 'var(--ink-faint)' }}>
+        {code}
+      </span>
+      <span className="text-sm font-medium" style={{ color: 'var(--ink)' }}>
+        {children}
+      </span>
+    </label>
+  );
+}
+
 export default function InputForm() {
   const router = useRouter();
   const [rawInput, setRawInput] = useState('');
@@ -80,11 +99,18 @@ export default function InputForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-xl mx-auto flex flex-col gap-5">
+    <form
+      onSubmit={handleSubmit}
+      className="w-full max-w-xl mx-auto flex flex-col gap-5 p-6 rounded-lg"
+      style={{ background: 'var(--board)', border: '1px solid var(--hairline)' }}
+    >
+      <div className="flex items-center justify-between font-mono text-[10px] tracking-wide pb-3" style={{ color: 'var(--ink-faint)', borderBottom: '1px solid var(--hairline)' }}>
+        <span>MANIFEST INTAKE</span>
+        <span>5 FIELDS</span>
+      </div>
+
       <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>
-          What happened?
-        </label>
+        <FieldLabel code="F-1">What happened?</FieldLabel>
         <textarea
           value={rawInput}
           onChange={(e) => setRawInput(e.target.value.slice(0, 500))}
@@ -93,14 +119,12 @@ export default function InputForm() {
           rows={3}
           required
           className="w-full rounded-md px-3 py-2 text-sm resize-none"
-          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', color: 'var(--text-primary)' }}
+          style={fieldStyle}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>
-          Your job title
-        </label>
+        <FieldLabel code="F-2">Your job title</FieldLabel>
         <input
           ref={jobTitleRef}
           type="text"
@@ -111,14 +135,12 @@ export default function InputForm() {
           maxLength={100}
           required
           className="w-full rounded-md px-3 py-2 text-sm"
-          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', color: 'var(--text-primary)' }}
+          style={fieldStyle}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>
-          Your top 3 skills
-        </label>
+        <FieldLabel code="F-3">Your top 3 skills</FieldLabel>
         <input
           ref={topSkillsRef}
           type="text"
@@ -129,15 +151,15 @@ export default function InputForm() {
           maxLength={200}
           required
           className="w-full rounded-md px-3 py-2 text-sm"
-          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', color: 'var(--text-primary)' }}
+          style={fieldStyle}
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>
+        <FieldLabel code="F-4">
           Current LinkedIn headline and/or resume bullets{' '}
-          <span style={{ color: 'var(--text-muted)' }}>(optional)</span>
-        </label>
+          <span style={{ color: 'var(--ink-muted)', fontWeight: 400 }}>(optional)</span>
+        </FieldLabel>
         <textarea
           ref={optionalRef}
           value={optionalContext}
@@ -147,17 +169,17 @@ export default function InputForm() {
           maxLength={1000}
           rows={4}
           className="w-full rounded-md px-3 py-2 text-sm resize-none"
-          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', color: 'var(--text-primary)' }}
+          style={fieldStyle}
         />
-        <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-xs mt-1.5" style={{ color: 'var(--ink-muted)' }}>
           The more you give us, the less generic your outputs will be.
         </p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>
-          Your LinkedIn profile URL <span style={{ color: 'var(--text-muted)' }}>(optional)</span>
-        </label>
+        <FieldLabel code="F-5">
+          Your LinkedIn profile URL <span style={{ color: 'var(--ink-muted)', fontWeight: 400 }}>(optional)</span>
+        </FieldLabel>
         <input
           ref={linkedinRef}
           type="url"
@@ -166,16 +188,16 @@ export default function InputForm() {
           onKeyDown={focusNext(null)}
           placeholder="https://www.linkedin.com/in/your-name"
           className="w-full rounded-md px-3 py-2 text-sm"
-          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--bg-border)', color: 'var(--text-primary)' }}
+          style={fieldStyle}
         />
-        <p className="text-xs mt-1.5" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-xs mt-1.5" style={{ color: 'var(--ink-muted)' }}>
           We&apos;ll try to pull in publicly visible profile text. LinkedIn blocks most automated
           access, so this is best-effort — your other answers always work regardless.
         </p>
       </div>
 
       {linkedinNotice && (
-        <p className="text-xs" style={{ color: 'var(--accent)' }}>
+        <p className="text-xs" style={{ color: 'var(--amber)' }}>
           {linkedinNotice}
         </p>
       )}
@@ -183,23 +205,23 @@ export default function InputForm() {
       <button
         type="button"
         onClick={fillDemo}
-        className="text-sm font-medium px-4 py-2 rounded-md self-start"
-        style={{ color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid var(--accent-border)' }}
+        className="font-mono text-xs font-medium px-4 py-2 rounded-md self-start"
+        style={{ color: 'var(--amber)', background: 'var(--amber-dim)', border: '1px solid var(--amber-border)' }}
       >
-        Try a demo scenario →
+        TRY A DEMO SCENARIO →
       </button>
 
       <button
         type="submit"
         disabled={!canSubmit || submitting}
-        className="text-sm font-semibold px-5 py-3 rounded-md font-display"
+        className="font-display text-base font-bold px-5 py-3 rounded-md tracking-wide"
         style={{
-          background: canSubmit && !submitting ? 'var(--accent)' : 'var(--bg-elevated)',
-          color: canSubmit && !submitting ? '#04111A' : 'var(--text-muted)',
+          background: canSubmit && !submitting ? 'var(--amber)' : 'var(--row)',
+          color: canSubmit && !submitting ? '#1B1A17' : 'var(--ink-muted)',
           cursor: canSubmit && !submitting ? 'pointer' : 'not-allowed',
         }}
       >
-        {submitting ? 'Analyzing...' : 'Start Recovery'}
+        {submitting ? 'ANALYZING...' : 'START RECOVERY →'}
       </button>
     </form>
   );

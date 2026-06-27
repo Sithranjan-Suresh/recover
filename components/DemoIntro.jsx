@@ -5,6 +5,7 @@ import AgentIcon from './AgentIcon';
 import { AGENT_ORDER, AGENT_LABELS } from '@/lib/constants';
 
 export default function DemoIntro({ onComplete }) {
+  const [revealedCount, setRevealedCount] = useState(0);
   const [textVisible, setTextVisible] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
 
@@ -19,7 +20,10 @@ export default function DemoIntro({ onComplete }) {
       return;
     }
 
-    const textTimer = setTimeout(() => setTextVisible(true), AGENT_ORDER.length * 50 + 200);
+    const revealTimers = AGENT_ORDER.map((_, i) =>
+      setTimeout(() => setRevealedCount(i + 1), 150 + i * 180)
+    );
+    const textTimer = setTimeout(() => setTextVisible(true), 150 + AGENT_ORDER.length * 180 + 150);
     const fadeTimer = setTimeout(() => setFadingOut(true), 2700);
     const doneTimer = setTimeout(() => {
       sessionStorage.setItem('introSeen', '1');
@@ -27,6 +31,7 @@ export default function DemoIntro({ onComplete }) {
     }, 3000);
 
     return () => {
+      revealTimers.forEach(clearTimeout);
       clearTimeout(textTimer);
       clearTimeout(fadeTimer);
       clearTimeout(doneTimer);
@@ -43,45 +48,58 @@ export default function DemoIntro({ onComplete }) {
       className={`fixed inset-0 flex flex-col items-center justify-center transition-opacity duration-300 ${
         fadingOut ? 'opacity-0' : 'opacity-100'
       }`}
-      style={{ background: 'var(--bg-base)', zIndex: 200 }}
+      style={{ background: 'var(--board)', zIndex: 200 }}
     >
       <button
         onClick={handleSkip}
-        className="absolute top-6 right-6 text-sm"
-        style={{ color: 'var(--text-muted)' }}
+        className="absolute top-6 right-6 font-mono text-xs"
+        style={{ color: 'var(--ink-muted)' }}
       >
-        Skip →
+        SKIP →
       </button>
 
-      <div className="flex gap-6 mb-8">
-        {AGENT_ORDER.map((agentName, i) => (
-          <div
-            key={agentName}
-            className="agent-card flex flex-col items-center gap-2"
-            style={{ animationDelay: `${i * 50}ms` }}
-          >
+      <div className="font-mono text-[11px] tracking-widest mb-3" style={{ color: 'var(--ink-faint)' }}>
+        RECOVER · DEPARTURES
+      </div>
+
+      <div className="flex flex-col gap-0 rounded-lg overflow-hidden mb-8" style={{ border: '1px solid var(--hairline)' }}>
+        {AGENT_ORDER.map((agentName, i) => {
+          const revealed = i < revealedCount;
+          return (
             <div
-              className="w-14 h-14 rounded-xl flex items-center justify-center"
-              style={{
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--accent-border)',
-                color: 'var(--accent)',
-              }}
+              key={agentName}
+              className="flex items-center gap-4 px-5 py-2.5"
+              style={{ background: 'var(--row)', borderBottom: i < AGENT_ORDER.length - 1 ? '1px solid var(--hairline)' : 'none' }}
             >
-              <AgentIcon agentName={agentName} size={26} />
+              <span className="font-mono text-xs w-10" style={{ color: 'var(--ink-faint)' }}>
+                R-0{i + 1}
+              </span>
+              <span style={{ color: revealed ? 'var(--amber)' : 'var(--ink-faint)' }}>
+                <AgentIcon agentName={agentName} size={16} />
+              </span>
+              <span
+                key={revealed ? 'on' : 'off'}
+                className="flap flap-flip font-display text-sm font-semibold w-[180px]"
+                style={{ color: revealed ? 'var(--ink)' : 'var(--ink-faint)' }}
+              >
+                {revealed ? AGENT_LABELS[agentName] : '— — — — —'}
+              </span>
+              <span
+                className="font-mono text-[10px] tracking-wide ml-auto"
+                style={{ color: revealed ? 'var(--sage)' : 'var(--ink-faint)' }}
+              >
+                {revealed ? 'DISPATCHED' : ''}
+              </span>
             </div>
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              {AGENT_LABELS[agentName]}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <p
-        className={`font-display text-lg sm:text-xl font-medium text-center px-6 transition-opacity duration-300 ${
+        className={`font-display text-lg sm:text-xl font-semibold text-center px-6 transition-opacity duration-300 ${
           textVisible ? 'opacity-100' : 'opacity-0'
         }`}
-        style={{ color: 'var(--text-primary)' }}
+        style={{ color: 'var(--ink)' }}
       >
         Five agents. One sentence. Your recovery starts now.
       </p>
