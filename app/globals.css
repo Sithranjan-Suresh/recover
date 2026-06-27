@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+:root {
+  --bg-base:       #0A0D1A;
+  --bg-surface:    #111425;
+  --bg-elevated:   #1A1F35;
+  --bg-border:     #232840;
+
+  --accent:        #00D4FF;
+  --accent-dim:    rgba(0, 212, 255, 0.10);
+  --accent-border: rgba(0, 212, 255, 0.30);
+
+  --success:       #00E5A0;
+  --success-dim:   rgba(0, 229, 160, 0.10);
+  --success-border:rgba(0, 229, 160, 0.30);
+
+  --warning:       #F5A623;
+  --warning-dim:   rgba(245, 166, 35, 0.10);
+
+  --danger:        #FF3B5C;
+  --danger-dim:    rgba(255, 59, 92, 0.10);
+
+  --text-primary:  #EEF2FF;
+  --text-muted:    #5A6480;
+  --text-faint:    #2A3050;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-inter), Inter, sans-serif;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+}
+
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.agent-card {
+  animation: cardEnter 200ms ease-out both;
+}
+
+@keyframes checkPop {
+  from { transform: scale(0.8); }
+  to   { transform: scale(1.0); }
+}
+
+.check-icon {
+  animation: checkPop 150ms ease-out;
+}
+
+.card-complete {
+  border-left: 3px solid var(--success);
+  border-top: 1px solid var(--bg-border);
+  border-right: 1px solid var(--bg-border);
+  border-bottom: 1px solid var(--bg-border);
+}
+
+.card-error {
+  border-left: 3px solid var(--danger);
+  border-top: 1px solid var(--bg-border);
+  border-right: 1px solid var(--bg-border);
+  border-bottom: 1px solid var(--bg-border);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 300ms ease-in both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-card, .check-icon, .spinner, .fade-in {
+    animation: none !important;
+  }
+}
