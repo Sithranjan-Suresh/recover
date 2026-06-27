@@ -57,6 +57,20 @@ export async function POST(request) {
       return Response.json({ error: 'Invalid plan output format' }, { status: 500 });
     }
 
+    const completedAgents = new Set(
+      Object.entries(outputs)
+        .filter(([, out]) => out.status === 'complete')
+        .map(([name]) => name)
+    );
+
+    for (const section of ['day1', 'week1', 'month1']) {
+      if (Array.isArray(plan[section])) {
+        plan[section] = plan[section].filter(
+          (action) => !action.sourceAgent || completedAgents.has(action.sourceAgent)
+        );
+      }
+    }
+
     return Response.json({ plan });
   } catch (err) {
     clearTimeout(timeout);
