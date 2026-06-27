@@ -30,9 +30,17 @@ export default function AgentCardExpanded({ agentName, output, recoveryContext, 
         style={{ background: 'var(--bg-surface)' }}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
-            {AGENT_LABELS[agentName]}
-          </h2>
+          <div className="flex items-center gap-2.5">
+            <h2 className="font-display text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+              {AGENT_LABELS[agentName]}
+            </h2>
+            <span
+              className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+              style={{ color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid var(--accent-border)' }}
+            >
+              ASI:ONE · asi1-mini
+            </span>
+          </div>
           <button onClick={onClose} className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Close ✕
           </button>
