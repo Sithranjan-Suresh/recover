@@ -26,23 +26,23 @@ export default function AgentCardExpanded({ agentName, output, recoveryContext, 
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="max-w-[680px] w-full rounded-2xl p-6 max-h-[85vh] overflow-y-auto"
-        style={{ background: 'var(--bg-surface)' }}
+        className="max-w-[680px] w-full rounded-lg p-6 max-h-[85vh] overflow-y-auto"
+        style={{ background: 'var(--row)', border: '1px solid var(--hairline)' }}
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 pb-4" style={{ borderBottom: '1px solid var(--hairline)' }}>
           <div className="flex items-center gap-2.5">
-            <h2 className="font-display text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+            <h2 className="font-display text-lg font-bold" style={{ color: 'var(--ink)' }}>
               {AGENT_LABELS[agentName]}
             </h2>
             <span
-              className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-              style={{ color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid var(--accent-border)' }}
+              className="font-mono text-[10px] font-medium px-2 py-0.5 rounded-full"
+              style={{ color: 'var(--amber)', background: 'var(--amber-dim)', border: '1px solid var(--amber-border)' }}
             >
               ASI:ONE · asi1-mini
             </span>
           </div>
-          <button onClick={onClose} className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Close ✕
+          <button onClick={onClose} className="font-mono text-xs" style={{ color: 'var(--ink-muted)' }}>
+            CLOSE ✕
           </button>
         </div>
         {Content && <Content content={output.content} recoveryContext={recoveryContext} />}

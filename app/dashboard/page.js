@@ -81,32 +81,37 @@ export default function DashboardPage() {
   return (
     <main className="flex-1 px-6 py-10 max-w-6xl mx-auto w-full">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-display text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-          Recovery Dashboard
-        </h1>
+        <div>
+          <p className="font-mono text-[10px] tracking-widest mb-1" style={{ color: 'var(--ink-faint)' }}>
+            RECOVER · DEPARTURES BOARD
+          </p>
+          <h1 className="font-display text-2xl font-bold" style={{ color: 'var(--ink)' }}>
+            Recovery Dashboard
+          </h1>
+        </div>
         <a
           href="https://asi1.ai"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs px-3 py-1.5 rounded-full"
-          style={{ color: 'var(--accent)', background: 'var(--accent-dim)', border: '1px solid var(--accent-border)' }}
+          className="font-mono text-[10px] tracking-wide px-3 py-1.5 rounded-full"
+          style={{ color: 'var(--amber)', background: 'var(--amber-dim)', border: '1px solid var(--amber-border)' }}
         >
-          Powered by ASI:ONE Multi-Agent Platform
+          POWERED BY ASI:ONE
         </a>
       </div>
 
       {state.allAgentsTerminal && erroredCount > 0 && (
         <div
           className="mb-6 px-4 py-3 rounded-md text-sm flex items-center justify-between"
-          style={{ background: 'var(--warning-dim)', color: 'var(--warning)', border: '1px solid var(--warning)' }}
+          style={{ background: 'var(--terracotta-dim)', color: 'var(--terracotta)', border: '1px solid var(--terracotta-border)' }}
         >
-          <span>
+          <span style={{ fontFamily: 'var(--font-source-serif)' }}>
             {allErrored
               ? 'Recover is experiencing high demand. Please retry in a moment.'
               : 'One agent did not complete — your plan may be partial. Retry to fill the gap.'}
           </span>
-          <button onClick={handleRetryAll} className="font-medium underline">
-            Retry All
+          <button onClick={handleRetryAll} className="font-mono text-xs font-medium underline flex-shrink-0">
+            RETRY ALL
           </button>
         </div>
       )}
@@ -122,14 +127,14 @@ export default function DashboardPage() {
             <button
               onClick={() => downloadRecoveryPack(state.recoveryContext, state.outputs, state.plan)}
               disabled={!state.allAgentsTerminal}
-              className="text-sm font-semibold px-5 py-3 rounded-md"
+              className="font-display text-base font-bold px-5 py-3 rounded-md tracking-wide"
               style={{
-                background: 'var(--accent)',
-                color: '#04111A',
+                background: 'var(--amber)',
+                color: '#1B1A17',
                 cursor: 'pointer',
               }}
             >
-              Download Recovery Pack
+              DOWNLOAD RECOVERY PACK
             </button>
           </div>
         </>
